@@ -2,6 +2,13 @@
 
 To install dependencies:
 
+requires bun install
+
+```bash
+brew tap oven-sh/bun 
+brew install bun
+```
+
 ```bash
 make install
 ```
