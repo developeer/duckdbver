@@ -14,5 +14,7 @@ make build
 
 The cli is put into bin\duckdbver
 
-
+```bash
+duckdbver path/to/data.duckdb
+```
 
