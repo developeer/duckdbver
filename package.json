@@ -1,12 +1,19 @@
 {
   "devDependencies": {
     "@types/node": "^20.8.0",
+    "@types/uuid": "^9.0.6",
+    "@types/yargs": "^17.0.29",
     "bun-types": "latest"
   },
   "name": "duckdbver",
-  "module": "index.ts",
-  "type": "module",
+  "version": "1.0.0",
+  "main": "index.ts",
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "package": "^1.0.1",
+    "uuid": "^9.0.1",
+    "yargs": "^17.7.2"
   }
 }

@@ -25,3 +25,7 @@ The cli is put into bin\duckdbver
 duckdbver path/to/data.duckdb
 ```
 
+
+````
+bun add --development @types/yargs
+```

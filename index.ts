@@ -1,40 +1,67 @@
+// Import the necessary modules
 import { openSync, readSync, existsSync } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import yargs from 'yargs';
 
+// Define the main function
+function main() {
 
-const dbfile = process.argv[2];
+    //figure out how to get in bun environment
+    //const version = process.env.npm_package_version;
 
-if (!existsSync(dbfile))
-{
-    console.log(`db file does not exist. ${dbfile}`);
-    process.exit(1);
-};
+    // Parse the command-line arguments using yargs
+    const argv = yargs(process.argv.slice(2))
+        .option('db', {
+            alias: 'd',
+            describe: 'path to the DuckDB file',
+            demandOption: true,
+            type: 'string',
+        })
+        .version(false)
+        .alias('version', 'v')
+        .help()
+        .alias('help', 'h').argv;
 
-const pattern = Buffer.alloc(8 + 4 + 8);
-const fd = openSync(dbfile, 'r');
+    const dbfile = argv.db;
 
-//https://duckdb.org/internals/storage.html
+    // Check if the specified file exists
+    if (!existsSync(dbfile)) {
+        console.log(`duckdb file ${dbfile} does not exist.`);
+        process.exit(1);
+    }
 
-readSync(fd, pattern, 0, pattern.length, 0);
+    // Read the storage header from the file
+    const pattern = Buffer.alloc(8 + 4 + 8);
+    const fd = openSync(dbfile, 'r');
+    readSync(fd, pattern, 0, pattern.length, 0);
 
-const result = {
-    version: pattern.readUInt32LE(8),
-    storageVersion: pattern.readBigInt64LE(12)
-};
+    // Parse the storage header to determine the DuckDB version
+    const result = {
+        version: pattern.readUInt32LE(8),
+        storageVersion: pattern.readBigInt64LE(12),
+    };
 
-const map: Map<bigint, string> = new Map();
+    // Map the storage version to the corresponding DuckDB CLI version
+    const map: Map<bigint, string> = new Map([
+        [39n, 'duckdb-061'],
+        [43n, 'duckdb-071'],
+        [51n, 'duckdb-081'],
+        [64n, 'duckdb-0102'],
+    ]);
+    const cli = map.get(result.storageVersion);
 
-map.set(39n, 'duckdb-061');
-map.set(43n, 'duckdb-071');
-map.set(51n, 'duckdb-081');
-map.set(64n, 'duckdb-090');
+    // Generate a UUID for the backup file name
+    const uuid = uuidv4();
 
-const cli = map.get(result.storageVersion);
+    // Print the DuckDB CLI command to export the database to a backup file
+    if (cli == undefined) {
+        console.log(`unknown version ${result.storageVersion.toString()}`);
+    } else {
+        console.log(
+            `${cli} ${dbfile} -c "export database 'backup-${uuid}' (format parquet);"`
+        );
+    }
+}
 
-if (cli == undefined)
-    console.log(`Unknown version ${result.storageVersion.toString()}`);
-else
-    console.log(`${cli} ${dbfile}`);
-
-
-
-
+// Call the main function to execute the code
+main();
