@@ -11,3 +11,9 @@ run:
 
 ver:
 	./bin/duckdbver -v
+
+update:
+	bun update
+
+deploy:
+	cp ./bin/duckdbver ~/bin/duckdbver
